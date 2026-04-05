@@ -1,228 +1,895 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SportsSwap</title>
-
-<style>
-body{font-family:Arial;background:#F7FAFF;margin:0}
-header{background:#fff;padding:16px;display:flex;justify-content:space-between;border-bottom:1px solid #E3E8F0}
-.brand{font-size:24px;font-weight:800}.brand span{color:#4DA6FF}
-nav button{margin:4px;padding:8px 12px;border-radius:10px;border:none;background:#EEF6FF;color:#2F80ED;font-weight:700;cursor:pointer}
-.hero{background:linear-gradient(135deg,#2F80ED,#4DA6FF);color:#fff;padding:40px;text-align:center}
-.wrap{max-width:1100px;margin:auto;padding:20px}
-.section{display:none}.active{display:block}
-
-.card img{
-  width:100%;
-  height:320px;
-  object-fit:contain;
-  background:#F3F6FB;
-  padding:12px;
-}
-
-.panel{background:#fff;padding:16px;border-radius:12px;margin-bottom:16px}
-input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;margin-bottom:10px}
-button{padding:10px;border:none;border-radius:10px;font-weight:700;cursor:pointer}
-.btn-primary{background:#4DA6FF;color:#fff}
-
-.preview{width:100%;max-height:200px;display:none;border-radius:10px;margin-top:10px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SportsSwap Orders Beta</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #F7FAFF; color: #111; }
+    header {
+      background: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid #E3E8F0;
+    }
+    .brand { font-size: 26px; font-weight: 800; }
+    .brand span { color: #4DA6FF; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; }
+    nav button {
+      background: #EEF6FF;
+      color: #2F80ED;
+      border: 1px solid #D7E8FF;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    nav button:hover { background: #4DA6FF; color: #fff; }
+    .hero {
+      background: linear-gradient(135deg, #2F80ED, #4DA6FF);
+      color: #fff;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 40px; margin-bottom: 12px; }
+    .hero p { font-size: 18px; color: #EAF4FF; margin-bottom: 18px; }
+    .trust {
+      display: inline-block;
+      background: #fff;
+      color: #2F80ED;
+      font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 999px;
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .section-title { font-size: 30px; margin-bottom: 10px; }
+    .subtext { color: #5C6B7A; margin-bottom: 20px; }
+    .toolbar, .btn-row, .offer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .toolbar { margin-bottom: 22px; }
+    .toolbar input,
+    .toolbar select,
+    .form input,
+    .form textarea,
+    .form select {
+      padding: 12px;
+      border: 1px solid #DCE6F2;
+      border-radius: 12px;
+      width: 100%;
+      background: #fff;
+      outline: none;
+    }
+    .toolbar input { flex: 2; min-width: 220px; }
+    .toolbar select { flex: 1; min-width: 180px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .card, .panel, .chat-list, .chat-window {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(47,128,237,.08);
+      border: 1px solid #E3E8F0;
+    }
+    .card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #ddd;
+    }
+    .card-body, .panel { padding: 18px; }
+    .pill {
+      display: inline-block;
+      background: #EAF4FF;
+      color: #2F80ED;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .price { font-size: 24px; font-weight: 700; margin: 8px 0 12px; }
+    .muted { color: #64748B; font-size: 14px; margin-bottom: 10px; }
+    .btn {
+      border: none;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary { background: #4DA6FF; color: #fff; }
+    .btn-primary:hover { background: #2F80ED; }
+    .btn-dark { background: #111827; color: #fff; }
+    .btn-light {
+      background: #EEF6FF;
+      color: #2F80ED;
+      border: 1px solid #D7E8FF;
+    }
+    .form { display: grid; gap: 12px; max-width: 700px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .timeline, .info-list { display: grid; gap: 12px; }
+    .timeline div, .info-item {
+      background: #FAFCFF;
+      border: 1px solid #E3E8F0;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .status {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .status-green { background: #E8FFF2; color: #15803D; }
+    .status-yellow { background: #FFF7DF; color: #9A6A00; }
+    .status-red { background: #FDECEC; color: #B42318; }
+    .status-blue { background: #EEF6FF; color: #2F80ED; }
+    .chat-wrap {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .chat-list-header, .chat-header {
+      padding: 16px;
+      border-bottom: 1px solid #E3E8F0;
+      background: #FAFCFF;
+    }
+    .chat-item {
+      padding: 14px 16px;
+      border-bottom: 1px solid #EEF2F7;
+      cursor: pointer;
+      background: #fff;
+    }
+    .chat-item:hover, .chat-item.active { background: #EEF6FF; }
+    .chat-item-title { font-weight: 700; margin-bottom: 4px; }
+    .chat-item-sub { font-size: 13px; color: #64748B; }
+    .chat-window {
+      display: flex;
+      flex-direction: column;
+      min-height: 560px;
+    }
+    .chat-messages {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      background: #F9FBFF;
+    }
+    .bubble {
+      max-width: 75%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      line-height: 1.45;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .bubble.system {
+      background: #EEF6FF;
+      color: #2F80ED;
+      align-self: center;
+      text-align: center;
+      max-width: 90%;
+      border: 1px solid #D7E8FF;
+      font-weight: 700;
+    }
+    .bubble.buyer {
+      background: #fff;
+      color: #111;
+      align-self: flex-start;
+      border: 1px solid #E3E8F0;
+    }
+    .bubble.seller {
+      background: #4DA6FF;
+      color: #fff;
+      align-self: flex-end;
+    }
+    .bubble small {
+      display: block;
+      margin-top: 6px;
+      opacity: .8;
+      font-size: 11px;
+    }
+    .chat-compose {
+      border-top: 1px solid #E3E8F0;
+      padding: 16px;
+      background: #fff;
+    }
+    .compose-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+    .chat-compose textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      padding: 12px;
+      border: 1px solid #DCE6F2;
+      border-radius: 12px;
+      outline: none;
+      font-family: Arial, sans-serif;
+    }
+    .banner {
+      background: #EEF6FF;
+      color: #2F80ED;
+      padding: 12px 16px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      font-weight: 700;
+      border: 1px solid #D7E8FF;
+    }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #111827;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      display: none;
+      z-index: 999;
+    }
+    .file-input {
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #DCE6F2;
+      border-radius: 12px;
+    }
+    .preview {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      border-radius: 12px;
+      display: none;
+      border: 1px solid #E3E8F0;
+    }
+    @media (max-width: 900px) {
+      .chat-wrap { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .split { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 32px; }
+      nav { width: 100%; }
+      nav button { flex: 1 1 auto; }
+      .compose-row { grid-template-columns: 1fr; }
+      .bubble { max-width: 88%; }
+    }
+  </style>
 </head>
-
 <body>
+  <header>
+    <div class="brand">Sports<span>Swap</span></div>
+    <nav>
+      <button onclick="showSection('shop')">Shop</button>
+      <button onclick="showSection('sell')">Sell Now</button>
+      <button onclick="showSection('offers')">Offers / Messages</button>
+      <button onclick="showSection('orders')">Orders</button>
+      <button onclick="showSection('disputes')">Disputes</button>
+      <button onclick="showSection('account')">Account</button>
+      <button onclick="showSection('terms')">Terms</button>
+    </nav>
+  </header>
 
-<header>
-<div class="brand">Sports<span>Swap</span></div>
-<nav>
-<button onclick="showSection('shop')">Shop</button>
-<button onclick="showSection('sell')">Sell</button>
-<button onclick="showSection('account')">Account</button>
-</nav>
-</header>
+  <section class="hero">
+    <h1>Buy and sell sports gear safely</h1>
+    <p>Secure offers, tracked shipping, personalized messaging, and 48-hour buyer protection.</p>
+    <div class="trust">Protected by SportsSwap</div>
+  </section>
 
-<div class="hero">
-<h1>Buy and sell sports gear safely</h1>
-</div>
+  <main class="wrap">
+    <div class="banner">Live beta mode. Device image upload is now built in. Listings can use a photo directly from your phone or computer.</div>
 
-<div class="wrap">
+    <section id="shop" class="section active">
+      <h2 class="section-title">Shop</h2>
+      <p class="subtext">Browse live listings. Sign in to post, send offers, and message.</p>
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="Search hockey sticks, gloves, skates..." oninput="renderListings()" />
+        <select id="categoryFilter" onchange="renderListings()">
+          <option value="All">Category: All</option>
+          <option value="Sticks">Sticks</option>
+          <option value="Gloves">Gloves</option>
+          <option value="Skates">Skates</option>
+          <option value="Helmet">Helmet</option>
+        </select>
+        <select><option>Sort: Newest</option></select>
+      </div>
+      <div class="grid" id="listingsGrid"></div>
+    </section>
 
-<!-- SHOP -->
-<div id="shop" class="section active">
-<h2>Shop</h2>
-<div id="listings"></div>
-</div>
+    <section id="sell" class="section">
+      <h2 class="section-title">Sell Now</h2>
+      <p class="subtext">Post a real listing to Firebase and upload a photo directly from your device.</p>
+      <div class="panel">
+        <h3>Create Listing</h3>
+        <div class="form">
+          <input type="text" id="sellTitle" placeholder="Item title" />
+          <div class="split">
+            <select id="sellCategory">
+              <option>Sticks</option>
+              <option>Gloves</option>
+              <option>Skates</option>
+              <option>Helmet</option>
+            </select>
+            <input type="number" id="sellPrice" placeholder="Price" />
+          </div>
+          <div class="split">
+            <select id="sellCondition">
+              <option>New</option>
+              <option>Like New</option>
+              <option selected>Good</option>
+              <option>Used</option>
+            </select>
+            <input type="text" id="sellLocation" placeholder="Shipping origin / city" />
+          </div>
+          <textarea rows="5" id="sellDetails" placeholder="Describe your item, sizing, defects, and details"></textarea>
+          <input class="file-input" type="file" id="sellImageFile" accept="image/*" />
+          <img id="imagePreview" class="preview" alt="Preview" />
+          <button class="btn btn-primary" onclick="createListing()">Post Listing</button>
+        </div>
+      </div>
+    </section>
 
-<!-- SELL -->
-<div id="sell" class="section">
-<h2>Sell Item</h2>
+    <section id="offers" class="section">
+      <h2 class="section-title">Offers / Messages</h2>
+      <p class="subtext">Every offer creates a live message thread in Firebase. Accepting an offer now creates an order.</p>
+      <div class="chat-wrap">
+        <div class="chat-list">
+          <div class="chat-list-header">Live Conversations</div>
+          <div id="chatList"></div>
+        </div>
+        <div class="chat-window">
+          <div class="chat-header">
+            <h3 id="chatTitle">No thread selected</h3>
+            <div class="chat-item-sub" id="chatMeta">Choose a conversation from the left.</div>
+            <span class="status status-yellow" id="chatStatus">Waiting</span>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-compose">
+            <div class="compose-row">
+              <textarea id="messageInput" placeholder="Type a personalized message..."></textarea>
+              <button class="btn btn-primary" onclick="sendMessage()">Send Message</button>
+            </div>
+            <div class="offer-actions">
+              <button class="btn btn-primary" onclick="acceptOffer()">Accept Offer</button>
+              <button class="btn btn-light" onclick="counterOffer()">Counter Offer</button>
+              <button class="btn btn-dark" onclick="declineOffer()">Decline</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<select id="sport"></select>
-<select id="gear"></select>
+    <section id="orders" class="section">
+      <h2 class="section-title">Orders</h2>
+      <p class="subtext">Orders are now real. Accepted offers appear here and can move through your delivery flow.</p>
+      <div class="grid" id="ordersGrid"></div>
+    </section>
 
-<input id="title" placeholder="Item title">
-<input id="price" placeholder="Price">
+    <section id="disputes" class="section">
+      <h2 class="section-title">Disputes</h2>
+      <p class="subtext">This stays as placeholder for now until payments are wired.</p>
+      <div class="panel">
+        <h3>Coming next</h3>
+        <p>Once payments are live, we’ll connect real dispute handling and payout approval.</p>
+      </div>
+    </section>
 
-<textarea id="desc" placeholder="Description"></textarea>
+    <section id="account" class="section">
+      <h2 class="section-title">Account</h2>
+      <p class="subtext">Create an account or sign in with email and password.</p>
+      <div class="panel">
+        <h3 id="accountHeading">Create / Sign In</h3>
+        <div class="form">
+          <input type="email" id="authEmail" placeholder="Email address" />
+          <input type="password" id="authPassword" placeholder="Password" />
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="signUp()">Create Account</button>
+            <button class="btn btn-light" onclick="signIn()">Sign In</button>
+            <button class="btn btn-dark" onclick="signOutUser()">Sign Out</button>
+          </div>
+          <div class="muted" id="userStatus">Not signed in.</div>
+        </div>
+      </div>
+    </section>
 
-<input type="file" id="imageFile">
-<img id="preview" class="preview">
+    <section id="terms" class="section">
+      <h2 class="section-title">Terms & Conditions</h2>
+      <div class="panel">
+        <p><strong>1. Browsing and Accounts</strong><br>Users may browse listings without an account. An account is required to message, make offers, buy items, list products, open disputes, and manage payments.</p><br>
+        <p><strong>2. Seller Shipping Obligation</strong><br>Once an order is confirmed, the seller must ship the item within <strong>5 business days</strong>.</p><br>
+        <p><strong>3. Delivery and Buyer Review</strong><br>After delivery, the buyer has <strong>48 hours</strong> to approve the transaction or open a dispute.</p><br>
+        <p><strong>4. Beta Disclaimer</strong><br>This beta currently supports Firebase auth, listings, messaging, orders, and device image upload. Payments are next.</p>
+      </div>
+    </section>
+  </main>
 
-<button class="btn-primary" onclick="createListing()">Post</button>
-</div>
+  <div id="toast" class="toast"></div>
 
-<!-- ACCOUNT -->
-<div id="account" class="section">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
-<h2>Account</h2>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYPsyhHfI2fl0nHGHSX4i1z2e9ZOfDb2I",
+      authDomain: "sportsswap-32168.firebaseapp.com",
+      projectId: "sportsswap-32168",
+      storageBucket: "sportsswap-32168.firebasestorage.app",
+      messagingSenderId: "338047786786",
+      appId: "1:338047786786:web:e10d3d719be347ca4f0f7b"
+    };
 
-<input id="email" placeholder="Email">
-<input id="password" placeholder="Password">
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-<button onclick="signUp()">Sign Up</button>
-<button onclick="signIn()">Sign In</button>
+    let currentUser = null;
+    let listings = [];
+    let threads = [];
+    let orders = [];
+    let currentThreadId = null;
 
-<h3>Profile</h3>
+    const defaultImages = {
+      Sticks: "https://images.unsplash.com/photo-1511886929837-354d827aae26?auto=format&fit=crop&w=1200&q=80",
+      Gloves: "https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1200&q=80",
+      Skates: "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?auto=format&fit=crop&w=1200&q=80",
+      Helmet: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80"
+    };
 
-<input id="username" placeholder="Username">
-<input type="file" id="profileFile">
-<img id="profilePreview" class="preview">
-<textarea id="bio" placeholder="Bio"></textarea>
+    window.showSection = id => {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-<button onclick="saveProfile()">Save Profile</button>
+    const toast = t => {
+      const x = document.getElementById('toast');
+      x.textContent = t;
+      x.style.display = 'block';
+      clearTimeout(window.tt);
+      window.tt = setTimeout(() => x.style.display = 'none', 2600);
+    };
+    window.showToast = toast;
 
-</div>
+    const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
 
-</div>
+    const escapeJs = s => String(s || '')
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'");
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
+    const nowTime = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
-const app=initializeApp({
-apiKey:"YOUR KEY",
-authDomain:"YOUR DOMAIN",
-projectId:"YOUR ID",
-storageBucket:"YOUR BUCKET"
-});
+    const requireAuth = m => {
+      if (!currentUser) {
+        toast(m);
+        showSection('account');
+        return false;
+      }
+      return true;
+    };
 
-const auth=getAuth(app);
-const db=getFirestore(app);
-const storage=getStorage(app);
+    document.getElementById('sellImageFile').addEventListener('change', e => {
+      const file = e.target.files[0];
+      const preview = document.getElementById('imagePreview');
+      if (!file) {
+        preview.style.display = 'none';
+        preview.src = '';
+        return;
+      }
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    });
 
-let user=null;
+    window.signUp = async () => {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      if (!email || !password) return toast('Enter email and password.');
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        toast('Account created.');
+      } catch (e) {
+        toast(e.message);
+      }
+    };
 
-onAuthStateChanged(auth,u=>{user=u;loadProfile();});
+    window.signIn = async () => {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      if (!email || !password) return toast('Enter email and password.');
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        toast('Signed in.');
+      } catch (e) {
+        toast(e.message);
+      }
+    };
 
-window.showSection=id=>{
-document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-}
+    window.signOutUser = async () => {
+      await signOut(auth);
+      toast('Signed out.');
+    };
 
-const sports={
-Hockey:["Stick","Skates","Gloves"],
-Baseball:["Bat","Glove","Helmet"],
-Golf:["Clubs","Bag"]
-};
+    onAuthStateChanged(auth, user => {
+      currentUser = user || null;
+      document.getElementById('userStatus').textContent = currentUser ? `Signed in as ${currentUser.email}` : 'Not signed in.';
+      document.getElementById('accountHeading').textContent = currentUser ? 'Your Account' : 'Create / Sign In';
+      renderThreads();
+      renderOrders();
+    });
 
-const sportSelect=document.getElementById('sport');
-const gearSelect=document.getElementById('gear');
+    window.createListing = async () => {
+      if (!requireAuth('Please sign in before posting a listing.')) return;
 
-Object.keys(sports).forEach(s=>{
-let o=document.createElement('option');
-o.textContent=s;
-sportSelect.appendChild(o);
-});
+      const title = document.getElementById('sellTitle').value.trim();
+      const category = document.getElementById('sellCategory').value;
+      const price = Number(document.getElementById('sellPrice').value);
+      const condition = document.getElementById('sellCondition').value;
+      const location = document.getElementById('sellLocation').value.trim();
+      const details = document.getElementById('sellDetails').value.trim();
+      const file = document.getElementById('sellImageFile').files[0];
 
-sportSelect.onchange=()=>{
-gearSelect.innerHTML="";
-sports[sportSelect.value].forEach(g=>{
-let o=document.createElement('option');
-o.textContent=g;
-gearSelect.appendChild(o);
-});
-};
+      let image = defaultImages[category] || defaultImages.Helmet;
 
-sportSelect.onchange();
+      if (!title || !price || !details) return toast('Add title, price, and details.');
 
-document.getElementById('imageFile').onchange=e=>{
-let file=e.target.files[0];
-let p=document.getElementById('preview');
-p.src=URL.createObjectURL(file);
-p.style.display='block';
-};
+      try {
+        if (file) {
+          const storageRef = ref(storage, `listing_images/${Date.now()}_${file.name}`);
+          await uploadBytes(storageRef, file);
+          image = await getDownloadURL(storageRef);
+        }
 
-window.createListing=async()=>{
-let file=document.getElementById('imageFile').files[0];
-let img="";
+        await addDoc(collection(db, 'listings'), {
+          title,
+          category,
+          price,
+          condition,
+          location,
+          details,
+          image,
+          sellerEmail: currentUser.email,
+          createdAt: serverTimestamp()
+        });
 
-if(file){
-let r=ref(storage,'img/'+Date.now());
-await uploadBytes(r,file);
-img=await getDownloadURL(r);
-}
+        ['sellTitle', 'sellPrice', 'sellLocation', 'sellDetails'].forEach(id => {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('sellImageFile').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('imagePreview').src = '';
 
-await addDoc(collection(db,'listings'),{
-title:title.value,
-price:price.value,
-desc:desc.value,
-sport:sport.value,
-gear:gear.value,
-image:img
-});
-};
+        toast('Listing posted.');
+        showSection('shop');
+      } catch (e) {
+        toast(e.message);
+      }
+    };
 
-onSnapshot(collection(db,'listings'),snap=>{
-let html="";
-snap.forEach(d=>{
-let i=d.data();
-html+=`
-<div class="panel card">
-<img src="${i.image}">
-<h3>${i.title}</h3>
-<p>${i.sport} • ${i.gear}</p>
-<p>$${i.price}</p>
-</div>`;
-});
-listings.innerHTML=html;
-});
+    onSnapshot(query(collection(db, 'listings'), orderBy('createdAt', 'desc')), snap => {
+      listings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderListings();
+    });
 
-window.signUp=()=>createUserWithEmailAndPassword(auth,email.value,password.value);
-window.signIn=()=>signInWithEmailAndPassword(auth,email.value,password.value);
+    onSnapshot(query(collection(db, 'threads'), orderBy('createdAt', 'desc')), snap => {
+      threads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderThreads();
+    });
 
-window.saveProfile=async()=>{
-let file=document.getElementById('profileFile').files[0];
-let img="";
+    onSnapshot(query(collection(db, 'orders'), orderBy('createdAt', 'desc')), snap => {
+      orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderOrders();
+    });
 
-if(file){
-let r=ref(storage,'profile/'+user.uid);
-await uploadBytes(r,file);
-img=await getDownloadURL(r);
-}
+    window.renderListings = () => {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const category = document.getElementById('categoryFilter').value;
+      const grid = document.getElementById('listingsGrid');
 
-await setDoc(doc(db,'users',user.uid),{
-username:username.value,
-bio:bio.value,
-image:img
-});
-};
+      const filtered = listings.filter(i =>
+        (i.title || '').toLowerCase().includes(search) &&
+        (category === 'All' || i.category === category)
+      );
 
-async function loadProfile(){
-if(!user)return;
-let s=await getDoc(doc(db,'users',user.uid));
-if(!s.exists())return;
-let d=s.data();
-username.value=d.username||"";
-bio.value=d.bio||"";
-if(d.image){
-profilePreview.src=d.image;
-profilePreview.style.display="block";
-}
-}
-</script>
+      grid.innerHTML = '';
 
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="panel">No live listings yet. Create the first one.</div>';
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}">
+          <div class="card-body">
+            <div class="pill">${escapeHtml(item.condition)} Condition</div>
+            <h3>${escapeHtml(item.title)}</h3>
+            <div class="muted">${escapeHtml(item.category)} • ${escapeHtml(item.location || 'Location not set')}</div>
+            <div class="price">$${Number(item.price).toFixed(0)}</div>
+            <div class="muted">${escapeHtml(item.details)}</div>
+            <div class="muted">Seller: ${escapeHtml(item.sellerEmail || 'Unknown')}</div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="makeOffer('${item.id}','${escapeJs(item.title)}',${Number(item.price)})">Make Offer</button>
+              <button class="btn btn-dark" onclick="showToast('Payments come next.')">Buy Now</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    };
+
+    window.makeOffer = async (listingId, title, price) => {
+      if (!requireAuth('Please sign in before making an offer.')) return;
+
+      const offer = window.prompt(`Enter your offer for ${title} (listed at $${price})`);
+      if (!offer) return;
+
+      const amount = Number(offer);
+      if (!amount) return toast('Enter a valid amount.');
+
+      const found = listings.find(x => x.id === listingId);
+
+      try {
+        const ref = await addDoc(collection(db, 'threads'), {
+          listingId,
+          listingTitle: title,
+          listingPrice: Number(price),
+          offerAmount: amount,
+          buyerEmail: currentUser.email,
+          sellerEmail: found?.sellerEmail || '',
+          status: 'Offer sent',
+          orderCreated: false,
+          messages: [
+            { sender: 'system', text: `Buyer submitted an offer of $${amount}.`, time: nowTime() },
+            { sender: 'buyer', text: `Hi, I’m interested in ${title}. Would you take $${amount}?`, time: nowTime() }
+          ],
+          createdAt: serverTimestamp()
+        });
+
+        currentThreadId = ref.id;
+        showSection('offers');
+        toast('Offer sent.');
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+
+    function renderThreads() {
+      const listEl = document.getElementById('chatList');
+      listEl.innerHTML = '';
+
+      const visible = currentUser
+        ? threads.filter(t => t.buyerEmail === currentUser.email || t.sellerEmail === currentUser.email)
+        : [];
+
+      if (!visible.length) {
+        listEl.innerHTML = '<div class="chat-item"><div class="chat-item-title">No conversations yet</div><div class="chat-item-sub">Sign in and send an offer to start one.</div></div>';
+        document.getElementById('chatTitle').textContent = 'No thread selected';
+        document.getElementById('chatMeta').textContent = 'Choose a conversation from the left.';
+        document.getElementById('chatMessages').innerHTML = '';
+        document.getElementById('chatStatus').textContent = 'Waiting';
+        return;
+      }
+
+      if (!currentThreadId || !visible.find(t => t.id === currentThreadId)) {
+        currentThreadId = visible[0].id;
+      }
+
+      visible.forEach(thread => {
+        const item = document.createElement('div');
+        item.className = `chat-item ${thread.id === currentThreadId ? 'active' : ''}`;
+        item.innerHTML = `
+          <div class="chat-item-title">${escapeHtml(thread.listingTitle || 'Untitled listing')}</div>
+          <div class="chat-item-sub">Offer $${Number(thread.offerAmount || 0).toFixed(0)} • ${escapeHtml(thread.status || 'Pending')}</div>
+        `;
+        item.onclick = () => {
+          currentThreadId = thread.id;
+          renderThreads();
+        };
+        listEl.appendChild(item);
+      });
+
+      renderCurrentThread(visible.find(t => t.id === currentThreadId));
+    }
+
+    function renderCurrentThread(thread) {
+      if (!thread) return;
+
+      document.getElementById('chatTitle').textContent = thread.listingTitle || 'Conversation';
+      document.getElementById('chatMeta').textContent = `Offer: $${thread.offerAmount} • Listed at $${thread.listingPrice} • Buyer: ${thread.buyerEmail}`;
+      document.getElementById('chatStatus').textContent = thread.status || 'Pending';
+
+      const messagesEl = document.getElementById('chatMessages');
+      messagesEl.innerHTML = '';
+
+      (thread.messages || []).forEach(msg => {
+        const bubble = document.createElement('div');
+        bubble.className = `bubble ${msg.sender === 'system' ? 'system' : msg.sender === 'buyer' ? 'buyer' : 'seller'}`;
+        bubble.innerHTML = msg.sender === 'system'
+          ? escapeHtml(msg.text)
+          : `${escapeHtml(msg.text)}<small>${escapeHtml(msg.time || '')}</small>`;
+        messagesEl.appendChild(bubble);
+      });
+
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    window.sendMessage = async () => {
+      if (!requireAuth('Please sign in before sending messages.')) return;
+      if (!currentThreadId) return toast('Choose a conversation first.');
+
+      const text = document.getElementById('messageInput').value.trim();
+      if (!text) return;
+
+      const thread = threads.find(t => t.id === currentThreadId);
+      const sender = currentUser.email === thread.buyerEmail ? 'buyer' : 'seller';
+
+      try {
+        await updateDoc(doc(db, 'threads', currentThreadId), {
+          messages: arrayUnion({ sender, text, time: nowTime() })
+        });
+        document.getElementById('messageInput').value = '';
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+
+    window.acceptOffer = async () => {
+      if (!requireAuth('Please sign in first.')) return;
+      if (!currentThreadId) return toast('Choose a conversation first.');
+
+      const thread = threads.find(t => t.id === currentThreadId);
+      if (!thread) return;
+      if (thread.orderCreated) return toast('Order already created for this thread.');
+
+      try {
+        await addDoc(collection(db, 'orders'), {
+          threadId: thread.id,
+          listingId: thread.listingId,
+          listingTitle: thread.listingTitle,
+          price: thread.offerAmount,
+          buyerEmail: thread.buyerEmail,
+          sellerEmail: thread.sellerEmail,
+          status: 'Pending Shipment',
+          createdAt: serverTimestamp()
+        });
+
+        await updateDoc(doc(db, 'threads', currentThreadId), {
+          status: 'Offer accepted',
+          orderCreated: true,
+          messages: arrayUnion({ sender: 'system', text: 'Offer accepted. Order created.', time: nowTime() })
+        });
+
+        toast('Offer accepted. Order created.');
+        showSection('orders');
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+
+    window.counterOffer = async () => {
+      if (!requireAuth('Please sign in first.')) return;
+      if (!currentThreadId) return toast('Choose a conversation first.');
+
+      const amount = window.prompt('Enter your counter offer amount:');
+      if (!amount) return;
+
+      try {
+        await updateDoc(doc(db, 'threads', currentThreadId), {
+          offerAmount: Number(amount),
+          status: `Counter sent: $${amount}`,
+          messages: arrayUnion({ sender: 'system', text: `Seller sent a counter offer of $${amount}.`, time: nowTime() })
+        });
+        toast(`Counter sent at $${amount}.`);
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+
+    window.declineOffer = async () => {
+      if (!requireAuth('Please sign in first.')) return;
+      if (!currentThreadId) return toast('Choose a conversation first.');
+
+      try {
+        await updateDoc(doc(db, 'threads', currentThreadId), {
+          status: 'Offer declined',
+          messages: arrayUnion({ sender: 'system', text: 'Seller declined the offer.', time: nowTime() })
+        });
+        toast('Offer declined.');
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+
+    function renderOrders() {
+      const grid = document.getElementById('ordersGrid');
+
+      const visible = currentUser
+        ? orders.filter(o => o.buyerEmail === currentUser.email || o.sellerEmail === currentUser.email)
+        : [];
+
+      grid.innerHTML = '';
+
+      if (!visible.length) {
+        grid.innerHTML = '<div class="panel">No orders yet. Accept an offer to create the first order.</div>';
+        return;
+      }
+
+      visible.forEach(order => {
+        const isSeller = currentUser && currentUser.email === order.sellerEmail;
+        const isBuyer = currentUser && currentUser.email === order.buyerEmail;
+
+        let actions = '';
+
+        if (isSeller && order.status === 'Pending Shipment') {
+          actions += `<button class="btn btn-primary" onclick="updateOrderStatus('${order.id}','Shipped')">Mark Shipped</button>`;
+        }
+        if (isBuyer && order.status === 'Shipped') {
+          actions += `<button class="btn btn-primary" onclick="updateOrderStatus('${order.id}','Delivered')">Mark Delivered</button>`;
+        }
+        if (isBuyer && order.status === 'Delivered') {
+          actions += `<button class="btn btn-primary" onclick="updateOrderStatus('${order.id}','Completed')">Approve Order</button>`;
+          actions += `<button class="btn btn-dark" onclick="showSection('disputes'); showToast('Dispute flow comes next.')">Open Dispute</button>`;
+        }
+
+        const statusClass =
+          order.status === 'Completed' ? 'status-green' :
+          order.status === 'Shipped' ? 'status-blue' :
+          'status-yellow';
+
+        const card = document.createElement('div');
+        card.className = 'panel';
+        card.innerHTML = `
+          <h3>${escapeHtml(order.listingTitle || 'Order')}</h3>
+          <div class="muted">Buyer: ${escapeHtml(order.buyerEmail || '')}</div>
+          <div class="muted">Seller: ${escapeHtml(order.sellerEmail || '')}</div>
+          <div class="price">$${Number(order.price || 0).toFixed(0)}</div>
+          <span class="status ${statusClass}">${escapeHtml(order.status || 'Pending')}</span>
+          <div class="timeline" style="margin-top:14px;">
+            <div><strong>Flow:</strong> Accept offer → Pending Shipment → Shipped → Delivered → Completed</div>
+          </div>
+          <div class="btn-row" style="margin-top:14px;">
+            ${actions || '<span class="muted">No actions available for your role right now.</span>'}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    window.updateOrderStatus = async (orderId, nextStatus) => {
+      if (!requireAuth('Please sign in first.')) return;
+
+      try {
+        await updateDoc(doc(db, 'orders', orderId), { status: nextStatus });
+        toast(`Order marked ${nextStatus}.`);
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+  </script>
 </body>
 </html>
