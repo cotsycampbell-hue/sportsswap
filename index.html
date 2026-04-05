@@ -88,9 +88,10 @@
     }
     .card img {
       width: 100%;
-      height: 220px;
-      object-fit: cover;
-      background: #ddd;
+      height: 320px;
+      object-fit: contain;
+      background: #F3F6FB;
+      padding: 16px;
     }
     .card-body, .panel { padding: 18px; }
     .pill {
@@ -304,11 +305,17 @@
       <div class="toolbar">
         <input type="text" id="searchInput" placeholder="Search hockey sticks, gloves, skates..." oninput="renderListings()" />
         <select id="categoryFilter" onchange="renderListings()">
-          <option value="All">Category: All</option>
-          <option value="Sticks">Sticks</option>
-          <option value="Gloves">Gloves</option>
-          <option value="Skates">Skates</option>
-          <option value="Helmet">Helmet</option>
+          <option value="All">Sport: All</option>
+          <option value="Hockey">Hockey</option>
+          <option value="Baseball">Baseball</option>
+          <option value="Golf">Golf</option>
+          <option value="Basketball">Basketball</option>
+          <option value="Soccer">Soccer</option>
+          <option value="Football">Football</option>
+          <option value="Lacrosse">Lacrosse</option>
+          <option value="Tennis">Tennis</option>
+          <option value="Volleyball">Volleyball</option>
+          <option value="Other">Other</option>
         </select>
         <select><option>Sort: Newest</option></select>
       </div>
@@ -323,13 +330,12 @@
         <div class="form">
           <input type="text" id="sellTitle" placeholder="Item title" />
           <div class="split">
-            <select id="sellCategory">
-              <option>Sticks</option>
-              <option>Gloves</option>
-              <option>Skates</option>
-              <option>Helmet</option>
-            </select>
+            <select id="sellSport"></select>
             <input type="number" id="sellPrice" placeholder="Price" />
+          </div>
+          <div class="split">
+            <select id="sellGear"></select>
+            <input type="text" id="sellLocation" placeholder="Shipping origin / city" />
           </div>
           <div class="split">
             <select id="sellCondition">
@@ -338,7 +344,7 @@
               <option selected>Good</option>
               <option>Used</option>
             </select>
-            <input type="text" id="sellLocation" placeholder="Shipping origin / city" />
+            <div></div>
           </div>
           <textarea rows="5" id="sellDetails" placeholder="Describe your item, sizing, defects, and details"></textarea>
           <input class="file-input" type="file" id="sellImageFile" accept="image/*" />
@@ -409,6 +415,18 @@
           <div class="muted" id="userStatus">Not signed in.</div>
         </div>
       </div>
+
+      <div class="panel">
+        <h3>Your Public Profile</h3>
+        <div class="form">
+          <input type="text" id="profileUsername" placeholder="Username" />
+          <input class="file-input" type="file" id="profileImageFile" accept="image/*" />
+          <img id="profilePreview" class="preview" alt="Profile preview" />
+          <textarea id="profileBio" rows="4" placeholder="Write a short bio"></textarea>
+          <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+          <div class="muted" id="profileStatus">No profile loaded yet.</div>
+        </div>
+      </div>
     </section>
 
     <section id="terms" class="section">
@@ -427,7 +445,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, arrayUnion, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -455,6 +473,19 @@
       Gloves: "https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1200&q=80",
       Skates: "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?auto=format&fit=crop&w=1200&q=80",
       Helmet: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80"
+    };
+
+    const sportsGearMap = {
+      Hockey: ["Stick", "Skates", "Gloves", "Helmet", "Shoulder Pads", "Elbow Pads", "Shin Pads", "Pants", "Bag"],
+      Baseball: ["Bat", "Glove", "Helmet", "Cleats", "Batting Gloves", "Catcher Gear", "Bag"],
+      Golf: ["Clubs", "Bag", "Balls", "Shoes", "Gloves", "Clothes", "Rangefinder"],
+      Basketball: ["Shoes", "Jersey", "Shorts", "Ball", "Sleeves"],
+      Soccer: ["Cleats", "Shin Guards", "Jersey", "Shorts", "Ball", "Gloves"],
+      Football: ["Helmet", "Shoulder Pads", "Gloves", "Cleats", "Visor"],
+      Lacrosse: ["Stick", "Helmet", "Gloves", "Pads", "Cleats"],
+      Tennis: ["Racket", "Shoes", "Bag", "Strings", "Clothes"],
+      Volleyball: ["Shoes", "Knee Pads", "Ball", "Clothes"],
+      Other: ["Other Gear"]
     };
 
     window.showSection = id => {
@@ -491,9 +522,50 @@
       return true;
     };
 
+    function populateSportOptions() {
+      const sportSelect = document.getElementById('sellSport');
+      const gearSelect = document.getElementById('sellGear');
+      if (!sportSelect || !gearSelect) return;
+
+      sportSelect.innerHTML = '';
+      Object.keys(sportsGearMap).forEach(sport => {
+        const option = document.createElement('option');
+        option.value = sport;
+        option.textContent = sport;
+        sportSelect.appendChild(option);
+      });
+
+      function updateGearOptions() {
+        const selectedSport = sportSelect.value;
+        const gearList = sportsGearMap[selectedSport] || [];
+        gearSelect.innerHTML = '';
+        gearList.forEach(gear => {
+          const option = document.createElement('option');
+          option.value = gear;
+          option.textContent = gear;
+          gearSelect.appendChild(option);
+        });
+      }
+
+      sportSelect.addEventListener('change', updateGearOptions);
+      updateGearOptions();
+    }
+
     document.getElementById('sellImageFile').addEventListener('change', e => {
       const file = e.target.files[0];
       const preview = document.getElementById('imagePreview');
+      if (!file) {
+        preview.style.display = 'none';
+        preview.src = '';
+        return;
+      }
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    });
+
+    document.getElementById('profileImageFile').addEventListener('change', e => {
+      const file = e.target.files[0];
+      const preview = document.getElementById('profilePreview');
       if (!file) {
         preview.style.display = 'none';
         preview.src = '';
@@ -508,7 +580,14 @@
       const password = document.getElementById('authPassword').value.trim();
       if (!email || !password) return toast('Enter email and password.');
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          email,
+          username: '',
+          bio: '',
+          profileImage: '',
+          createdAt: new Date().toISOString()
+        });
         toast('Account created.');
       } catch (e) {
         toast(e.message);
@@ -532,10 +611,85 @@
       toast('Signed out.');
     };
 
+    async function loadProfile() {
+      if (!currentUser) return;
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        document.getElementById('profileUsername').value = data.username || '';
+        document.getElementById('profileBio').value = data.bio || '';
+        document.getElementById('profileStatus').textContent =
+          data.username ? `Profile loaded: @${data.username}` : 'Profile loaded.';
+
+        const preview = document.getElementById('profilePreview');
+        if (data.profileImage) {
+          preview.src = data.profileImage;
+          preview.style.display = 'block';
+        } else {
+          preview.style.display = 'none';
+          preview.src = '';
+        }
+      } catch (e) {
+        toast(e.message);
+      }
+    }
+
+    window.saveProfile = async () => {
+      if (!requireAuth('Please sign in before saving your profile.')) return;
+
+      const username = document.getElementById('profileUsername').value.trim();
+      const bio = document.getElementById('profileBio').value.trim();
+      const file = document.getElementById('profileImageFile').files[0];
+
+      if (!username) return toast('Please enter a username.');
+
+      try {
+        let profileImage = '';
+        const existingSnap = await getDoc(doc(db, 'users', currentUser.uid));
+        if (existingSnap.exists()) {
+          profileImage = existingSnap.data().profileImage || '';
+        }
+
+        if (file) {
+          const storageRef = ref(storage, `profile_images/${currentUser.uid}_${Date.now()}_${file.name}`);
+          await uploadBytes(storageRef, file);
+          profileImage = await getDownloadURL(storageRef);
+        }
+
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          email: currentUser.email,
+          username,
+          bio,
+          profileImage,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        document.getElementById('profileStatus').textContent = `Profile saved: @${username}`;
+        toast('Profile saved.');
+        loadProfile();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+
     onAuthStateChanged(auth, user => {
       currentUser = user || null;
       document.getElementById('userStatus').textContent = currentUser ? `Signed in as ${currentUser.email}` : 'Not signed in.';
       document.getElementById('accountHeading').textContent = currentUser ? 'Your Account' : 'Create / Sign In';
+
+      if (currentUser) {
+        loadProfile();
+      } else {
+        document.getElementById('profileUsername').value = '';
+        document.getElementById('profileBio').value = '';
+        document.getElementById('profileStatus').textContent = 'No profile loaded yet.';
+        document.getElementById('profilePreview').style.display = 'none';
+        document.getElementById('profilePreview').src = '';
+      }
+
       renderThreads();
       renderOrders();
     });
@@ -544,14 +698,15 @@
       if (!requireAuth('Please sign in before posting a listing.')) return;
 
       const title = document.getElementById('sellTitle').value.trim();
-      const category = document.getElementById('sellCategory').value;
+      const sport = document.getElementById('sellSport').value;
+      const gear = document.getElementById('sellGear').value;
       const price = Number(document.getElementById('sellPrice').value);
       const condition = document.getElementById('sellCondition').value;
       const location = document.getElementById('sellLocation').value.trim();
       const details = document.getElementById('sellDetails').value.trim();
       const file = document.getElementById('sellImageFile').files[0];
 
-      let image = defaultImages[category] || defaultImages.Helmet;
+      let image = defaultImages[gear] || defaultImages.Helmet || defaultImages.Sticks;
 
       if (!title || !price || !details) return toast('Add title, price, and details.');
 
@@ -564,7 +719,8 @@
 
         await addDoc(collection(db, 'listings'), {
           title,
-          category,
+          sport,
+          gear,
           price,
           condition,
           location,
@@ -610,7 +766,7 @@
 
       const filtered = listings.filter(i =>
         (i.title || '').toLowerCase().includes(search) &&
-        (category === 'All' || i.category === category)
+        (category === 'All' || i.sport === category)
       );
 
       grid.innerHTML = '';
@@ -628,7 +784,7 @@
           <div class="card-body">
             <div class="pill">${escapeHtml(item.condition)} Condition</div>
             <h3>${escapeHtml(item.title)}</h3>
-            <div class="muted">${escapeHtml(item.category)} • ${escapeHtml(item.location || 'Location not set')}</div>
+            <div class="muted">${escapeHtml(item.sport || '')} • ${escapeHtml(item.gear || '')} • ${escapeHtml(item.location || 'Location not set')}</div>
             <div class="price">$${Number(item.price).toFixed(0)}</div>
             <div class="muted">${escapeHtml(item.details)}</div>
             <div class="muted">Seller: ${escapeHtml(item.sellerEmail || 'Unknown')}</div>
@@ -879,6 +1035,8 @@
         grid.appendChild(card);
       });
     }
+
+    populateSportOptions();
 
     window.updateOrderStatus = async (orderId, nextStatus) => {
       if (!requireAuth('Please sign in first.')) return;
