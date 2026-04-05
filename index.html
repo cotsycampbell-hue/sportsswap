@@ -455,11 +455,50 @@
     </nav>
   </header>
 
-  <section class="hero">
-    <h1>Buy and sell sports gear safely</h1>
-    <p>Secure offers, tracked shipping, personalized messaging, and 48-hour buyer protection.</p>
-    <div class="trust">Protected by SportsSwap</div>
-  </section>
+<section class="hero" style="background:#F7FAFF; color:#111; text-align:left; padding:40px 24px;">
+  <div style="max-width:1100px;margin:auto;">
+
+    <div class="market-search">
+      <input type="text" placeholder="Search for sticks, skates, gloves..." />
+      <button>Search</button>
+    </div>
+
+    <div class="sports-pill-row">
+      <button class="active">Hockey</button>
+      <button>Baseball</button>
+      <button>Golf</button>
+      <button>Basketball</button>
+    </div>
+
+    <div class="headline-block">
+      <h2>Buy & sell sports gear the smart way</h2>
+      <p>Real players. Real deals. No retail prices.</p>
+    </div>
+
+    <div class="feature-grid">
+
+      <div class="feature-tile">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1400&q=80">
+        <div class="feature-overlay">
+          <h3>Shop Hockey Deals</h3>
+          <p>Sticks, skates, gloves & more</p>
+          <button onclick="document.getElementById('listingsGrid').scrollIntoView({behavior:'smooth'});">Shop</button>
+        </div>
+      </div>
+
+      <div class="feature-tile">
+        <img src="https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?auto=format&fit=crop&w=1400&q=80">
+        <div class="feature-overlay">
+          <h3>Sell Your Gear</h3>
+          <p>Turn unused gear into cash</p>
+          <button onclick="showSection('sell')">Sell Now</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
 
   <main class="wrap">
     <div class="banner">Live beta mode. Device image upload is now built in. Listings can use a photo directly from your phone or computer.</div>
